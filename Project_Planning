@@ -1,0 +1,581 @@
+For a 2-day project, the key is to **keep the scope small while making the architecture look production-ready**. The MVP should be fully playable with 3–4 AI agents, and the infrastructure should showcase your skills without becoming the bottleneck.
+
+# Project Plan
+
+## Goal
+
+Build an AI-powered escape room where the player escapes a laboratory by interacting with multiple AI agents. Each agent is a separate microservice deployed on Kubernetes. A central game manager enforces game rules and orchestrates interactions.
+
+---
+
+# Success Criteria
+
+By the end of the project, you should be able to:
+
+* Start the application with one command
+* Access the game via a web interface or terminal
+* Talk to multiple AI characters
+* Solve puzzles and escape
+* Run every service inside Docker
+* Deploy everything to Kubernetes
+* Automatically deploy through GitHub Actions
+
+---
+
+# Tech Stack
+
+| Area                    | Technology                              |
+| ----------------------- | --------------------------------------- |
+| Backend                 | Python 3.12                             |
+| API                     | FastAPI                                 |
+| AI                      | OpenAI SDK (or LiteLLM for flexibility) |
+| Orchestration           | Custom Game Manager                     |
+| Containers              | Docker                                  |
+| Container Orchestration | Kubernetes (Kind or Minikube)           |
+| CI/CD                   | GitHub Actions                          |
+| Storage                 | JSON files (MVP), SQLite (optional)     |
+| Frontend                | Simple HTML + JS or Streamlit           |
+| Testing                 | pytest                                  |
+
+---
+
+# Architecture
+
+```
+                    Browser
+
+                       │
+
+                 FastAPI Gateway
+
+                       │
+
+               Game Manager API
+
+       ┌────────┼────────┬─────────┐
+
+ Scientist   Robot   Guard   Terminal
+
+       │        │        │         │
+
+            OpenAI API
+```
+
+The **Game Manager** is the source of truth for the game state. AI agents only respond within the context they are given.
+
+---
+
+# Repository Structure
+
+```text
+escape-room-ai/
+
+escape-room-ai/
+
+├── cli/                         # Temporary frontend (command line)
+│   ├── main.py                  # CLI game loop
+│   ├── client.py                # HTTP client for Gateway API
+│   └── requirements.txt
+│
+├── gateway/                     # API entry point
+│   ├── main.py                  # FastAPI routes
+│   ├── models.py                # Request/response schemas
+│   ├── Dockerfile
+│   └── requirements.txt
+│
+├── manager/                     # Core game engine
+│   ├── main.py                  # Manager API
+│   ├── state.py                 # Game state management
+│   ├── puzzles.py               # Puzzle rules and progression
+│   ├── inventory.py             # Item handling
+│   ├── router.py                # Routes actions to agents
+│   ├── models.py                # Data models
+│   ├── Dockerfile
+│   └── requirements.txt
+│
+├── agents/                      # AI NPC services
+│   │
+│   ├── scientist/
+│   │   ├── main.py              # Scientist agent API
+│   │   ├── prompt.py            # Agent personality/instructions
+│   │   ├── Dockerfile
+│   │   └── requirements.txt
+│   │
+│   ├── robot/
+│   │   ├── main.py
+│   │   ├── prompt.py
+│   │   ├── Dockerfile
+│   │   └── requirements.txt
+│   │
+│   ├── guard/
+│   │   ├── main.py
+│   │   ├── prompt.py
+│   │   ├── Dockerfile
+│   │   └── requirements.txt
+│   │
+│   └── terminal/
+│       ├── main.py
+│       ├── prompt.py
+│       ├── Dockerfile
+│       └── requirements.txt
+│
+├── shared/                      # Shared code between services
+│   ├── schemas.py               # Common Pydantic models
+│   ├── constants.py             # Game constants
+│   └── config.py                # Environment variables
+│
+├── kubernetes/                  # K8s deployment manifests
+│   ├── gateway.yaml
+│   ├── manager.yaml
+│   ├── scientist.yaml
+│   ├── robot.yaml
+│   ├── guard.yaml
+│   └── terminal.yaml
+│
+├── tests/
+│   ├── test_manager.py          # Game logic tests
+│   ├── test_gateway.py          # API tests
+│   └── test_agents.py           # Agent behavior tests
+│
+├── docker-compose.yml           # Local multi-container setup
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yaml           # GitHub Actions pipeline
+│
+├── .env                         # API keys/config (not committed)
+├── .gitignore
+└── README.md
+```
+
+---
+
+# Service Responsibilities
+
+## Gateway
+
+Responsible for:
+
+* receiving user requests
+* returning responses
+* serving frontend
+
+Never contains game logic.
+
+---
+
+## Game Manager
+
+Responsible for:
+
+* inventory
+* room state
+* puzzles
+* NPC routing
+* victory detection
+* validating AI responses
+
+This is the brain of the application.
+
+Example state:
+
+```python
+{
+    "inventory": ["screwdriver"],
+    "door_locked": True,
+    "keycard_found": False,
+    "trust": {
+        "scientist": 2,
+        "guard": 0
+    },
+    "puzzles": {
+        "computer": False,
+        "door": False
+    }
+}
+```
+
+---
+
+## Scientist Agent
+
+Knows:
+
+* experiment
+* password hints
+* chemistry
+
+Never knows:
+
+* inventory
+* puzzles
+* hidden objects
+
+---
+
+## Robot Agent
+
+Knows:
+
+* ventilation
+* maintenance
+
+Cannot lie.
+
+---
+
+## Guard Agent
+
+Knows:
+
+* security
+* access cards
+
+Requires trust before helping.
+
+---
+
+## Terminal Agent
+
+Handles
+
+```
+login
+
+read files
+
+search logs
+
+unlock doors
+```
+
+Unlike the others, this agent should respond in a structured way (e.g., JSON with `"status"` and `"message"` fields) so the manager can easily update the game state.
+
+---
+
+# Game World
+
+Keep it intentionally small.
+
+```
+Lab
+
+↓
+
+Office
+
+↓
+
+Control Room
+
+↓
+
+Exit Door
+```
+
+Objects:
+
+```
+Desk
+
+Locker
+
+Computer
+
+Vent
+
+Door
+```
+
+Inventory:
+
+```
+Keycard
+
+Screwdriver
+
+Notebook
+
+Flash Drive
+```
+
+---
+
+# Puzzle Progression
+
+## Puzzle 1
+
+Talk to scientist.
+
+Receive hint.
+
+---
+
+## Puzzle 2
+
+Search desk.
+
+Find screwdriver.
+
+---
+
+## Puzzle 3
+
+Open vent.
+
+Find keycard.
+
+---
+
+## Puzzle 4
+
+Robot explains maintenance tunnel.
+
+---
+
+## Puzzle 5
+
+Computer accepts password.
+
+---
+
+## Puzzle 6
+
+Unlock exit.
+
+Game over.
+
+---
+
+# API Design
+
+## POST /action
+
+```json
+{
+    "action": "talk",
+    "target": "scientist",
+    "message": "How do I escape?"
+}
+```
+
+Response:
+
+```json
+{
+    "response": "...",
+    "inventory": [],
+    "room": "lab"
+}
+```
+
+---
+
+## GET /state
+
+Returns
+
+```json
+{
+    "inventory": [],
+    "location": "lab",
+    "door": false
+}
+```
+
+---
+
+## GET /history
+
+Conversation history.
+
+---
+
+# Prompt Design
+
+Each agent gets:
+
+```
+Role
+
+Personality
+
+Knowledge
+
+Restrictions
+
+Current conversation
+
+Relevant game state
+```
+
+Example:
+
+```
+You are Dr. Ellis.
+
+You caused the accident.
+
+You know:
+
+Door code: 4819
+
+Never reveal it directly.
+
+Give clues only.
+
+If trust >= 3,
+reveal one digit.
+
+Never invent objects.
+
+Never mention hidden items.
+```
+
+---
+
+# Docker Plan
+
+Every service has
+
+```
+FROM python:3.12
+
+COPY .
+
+RUN pip install
+
+CMD uvicorn ...
+```
+
+Use Docker Compose locally to simplify development:
+
+```
+gateway
+
+manager
+
+scientist
+
+robot
+
+guard
+
+terminal
+```
+
+---
+
+# Kubernetes Plan
+
+Create:
+
+```
+Deployment
+
+Service
+```
+
+for every component.
+
+Example:
+
+```
+gateway-deployment
+
+gateway-service
+
+manager-deployment
+
+manager-service
+```
+
+Expose only the Gateway.
+
+---
+
+# GitHub Actions
+
+Pipeline:
+
+```
+Push
+
+↓
+
+Lint
+
+↓
+
+Run tests
+
+↓
+
+Build Docker images
+
+↓
+
+Push images
+
+↓
+
+Deploy to Kind
+```
+
+If you don't have a registry, you can stop after the build step for the MVP and document how deployment would work.
+
+---
+
+# Testing
+
+Write a few focused tests:
+
+* Manager rejects opening the door without a keycard.
+* Inventory updates correctly after finding an item.
+* Puzzle progression follows the expected order.
+* Agent prompts include only the information that agent should know.
+
+This shows you care about correctness, not just AI interactions.
+
+---
+
+# Timeline
+
+### Day 1 (Core Gameplay)
+
+* Set up repository and project structure.
+* Build the Game Manager and game state.
+* Implement Gateway API.
+* Create Scientist, Robot, and Guard agent services.
+* Make a playable text-based version.
+
+**Deliverable:** A user can complete the escape room through API calls or a simple terminal interface.
+
+### Day 2 (Infrastructure & Polish)
+
+* Containerize all services with Docker.
+* Add Docker Compose.
+* Deploy to a local Kubernetes cluster (Kind or Minikube).
+* Configure GitHub Actions for linting, testing, and image builds.
+* Build a lightweight web UI.
+* Write a polished README with:
+
+  * Architecture diagram
+  * Setup instructions
+  * Gameplay screenshots
+  * Kubernetes deployment notes
+  * CI/CD workflow
+
+---
+
+## Nice-to-Have Features (If Time Allows)
+
+If you finish early, these additions can make the project stand out without requiring a major redesign:
+
+* **Streaming responses** so AI replies appear as they're generated.
+* **Conversation memory** that changes how NPCs react over time.
+* **A Narrator agent** to describe the room after each action.
+* **Observability** with Prometheus and Grafana.
+* **Terraform** to provision an AWS EKS cluster.
+* **Persistent saves** using SQLite or Redis.
+
+This plan gives you a complete, demonstrable project in about two days while showcasing distributed systems, agent orchestration, containerization, Kubernetes, CI/CD, and clean backend architecture. It also leaves clear extension points if you decide to continue developing it after the initial version.
