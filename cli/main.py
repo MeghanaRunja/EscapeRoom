@@ -6,7 +6,7 @@ from anthropic import Anthropic
 import re
 
 client = Anthropic(
-    api_key="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",
+    api_key=os.environ.get("CLAUDE_TOKEN"),
 )
 
 
