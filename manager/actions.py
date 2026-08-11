@@ -73,6 +73,7 @@ def talk_to_agent(agent, message):
             if message == "":
                 return {"message": scientist_respond("what do you want to say", state)}
             else:
+                add_item("password")
                 return {"message": scientist_respond(message, state)}
         case _:
             return {"message": f"There's no one called '{agent}' here."}
