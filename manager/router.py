@@ -13,7 +13,10 @@ def handle_action(action: PlayerAction):
 
 
     if action.action == "talk":
-        return talk_to_agent()
+        print(action.action)
+        print(action.target)
+        print(action.message)
+        return talk_to_agent(action.target, action.message)
 
 
     return {

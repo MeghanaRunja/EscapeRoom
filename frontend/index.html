@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>STATION-7 // Escape Protocol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div id="app">
+
+    <!-- Floating HUD -->
+    <div id="hud">
+      <div id="hud-room">
+        <span class="hud-eyebrow">SECTOR</span>
+        <span id="room-name">LABORATORY</span>
+      </div>
+      <div id="hud-puzzles">
+        <div class="puzzle-node" data-puzzle="found_keycard" title="Keycard">
+          <span class="node-dot"></span><span class="node-label">KEYCARD</span>
+        </div>
+        <div class="puzzle-node" data-puzzle="open_vent" title="Vent">
+          <span class="node-dot"></span><span class="node-label">VENT</span>
+        </div>
+        <div class="puzzle-node" data-puzzle="unlock_computer" title="Computer">
+          <span class="node-dot"></span><span class="node-label">TERMINAL</span>
+        </div>
+        <div class="puzzle-node" data-puzzle="door_unlocked" title="Door">
+          <span class="node-dot"></span><span class="node-label">EXIT</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game viewport -->
+    <div id="viewport">
+      <canvas id="game-canvas" width="960" height="600"></canvas>
+      <div id="prompt-bubble" class="hidden"></div>
+      <div id="scanlines"></div>
+      <div id="vignette"></div>
+    </div>
+
+    <!-- Console dock -->
+    <div id="console-dock">
+      <div id="tabs">
+        <button class="tab-btn active" data-tab="log">TRANSMISSION LOG</button>
+        <button class="tab-btn" data-tab="inventory">INVENTORY</button>
+        <span id="connection-status" class="offline">● LINK DOWN</span>
+      </div>
+
+      <div id="log-panel" class="panel active">
+        <div id="log-entries"></div>
+      </div>
+
+      <div id="inventory-panel" class="panel">
+        <div id="inventory-entries">
+          <span class="empty-note">No items recovered.</span>
+        </div>
+      </div>
+
+      <div id="chat-bar" class="hidden">
+        <span id="chat-target">ECHO &gt;</span>
+        <input id="chat-input" type="text" autocomplete="off" placeholder="Type a message and press Enter…" />
+        <button id="chat-close" title="Close (Esc)">×</button>
+      </div>
+    </div>
+
+    <div id="controls-hint">
+      <span><b>WASD</b> / <b>ARROWS</b> move</span>
+      <span><b>E</b> search</span>
+      <span><b>F</b> use</span>
+      <span><b>T</b> talk</span>
+      <span><b>ESC</b> close</span>
+    </div>
+
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

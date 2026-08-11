@@ -1,8 +1,14 @@
+import sys
+import os
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from puzzles import unlock_door, open_vent, unlock_computer
 from inventory import add_item, has_item
-from agents.guard.main import main as gmain
-from agents.robot.main import main as rmain
-from agents.scientist.main import main as smain
+from agents.guard.main import respond as guard_respond
+from agents.robot.main import respond as robot_respond
+from agents.scientist.main import respond as scientist_respond
+from state import get_state
 
 def search_object(object):
     match object:
@@ -50,11 +56,23 @@ def use_item(object):
                 "message": "You do not have the right item to use on this object."
             }
 
-def talk_to_agent(agent):
+def talk_to_agent(agent, message):
+    state = get_state()
     match agent:
         case "guard":
-            return gmain()
+            if message == "":
+                return {"message": guard_respond("what do you want to say", state)}
+            else:
+                return {"message": guard_respond(message, state)}
         case "robot":
-            return rmain()
+            if message == "":
+                return {"message": robot_respond("what do you want to say", state)}
+            else:
+                return {"message": robot_respond(message, state)}
         case "scientist":
-            return smain()
+            if message == "":
+                return {"message": scientist_respond("what do you want to say", state)}
+            else:
+                return {"message": scientist_respond(message, state)}
+        case _:
+            return {"message": f"There's no one called '{agent}' here."}
