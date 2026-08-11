@@ -8,7 +8,7 @@ from inventory import add_item, has_item
 from agents.guard.main import respond as guard_respond
 from agents.robot.main import respond as robot_respond
 from agents.scientist.main import respond as scientist_respond
-from state import get_state
+from manager.state import get_state
 
 def search_object(object):
     match object:

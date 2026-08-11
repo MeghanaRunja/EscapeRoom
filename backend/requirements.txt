@@ -1,0 +1,6 @@
+openAI
+anthropic
+requests
+fastapi
+pydantic
+uvicorn
